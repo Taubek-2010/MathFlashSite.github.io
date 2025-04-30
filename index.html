@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MathFlash - Интерактивные карточки по математике</title>
+  <style>
+    :root {
+      --primary-color: #4a6bff;
+      --secondary-color: #ff6b6b;
+      --dark-color: #2d3436;
+      --light-color: #f5f6fa;
+      --class-1-color: #74b9ff;
+      --class-2-color: #55efc4;
+      --class-3-color: #ffeaa7;
+      --class-4-color: #fd79a8;
+      --class-5-color: #00cec9;
+      --class-6-color: #e17055;
+      --class-7-color: #0984e3;
+      --class-8-color: #6c5ce7;
+      --class-9-color: #00b894;
+      --class-10-color: #e17055;
+      --class-11-color: #0984e3;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',sans-serif; }
+    html, body { height:100%; }
+    body { display:flex; flex-direction:column; background:var(--light-color); color:var(--dark-color); }
+    header {
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      color:white; text-align:center; padding:3rem 1rem;
+    }
+    header h1 { font-size:3rem; margin-bottom:.5rem; }
+    header p { font-size:1.1rem; }
+    .intro {
+      text-align:center; max-width:900px; margin:2rem auto;
+    }
+    .intro h2 { font-size:2rem; margin-bottom:1rem; }
+    .intro p { font-size:1.2rem; line-height:1.5; }
+    .plus-container {
+      display:flex; flex-wrap:wrap; justify-content:center; gap:2rem; margin:2rem auto; max-width:1000px;
+    }
+    .plus-card {
+      background:white; width:280px; padding:1.5rem; border-radius:12px;
+      box-shadow:0 4px 12px rgba(0,0,0,0.1); text-align:center; transition:transform .3s;
+    }
+    .plus-card:hover { transform:translateY(-5px); }
+    .plus-card h3 { color:var(--primary-color); margin-bottom:.5rem; }
+    .plus-card p { font-size:1rem; }
+    .grade-section {
+      text-align:center;
+      margin:3rem auto 1rem;
+      max-width:1000px;
+    }
+    .grade-section h2 {
+      font-size: 1.8rem;
+      margin-bottom: 1.2rem;
+    }
+    .grades-container {
+      display:flex; flex-wrap:wrap; justify-content:center; gap:1rem;
+    }
+    .grade-card {
+      padding:1rem 1.5rem; font-size:1.1rem; font-weight:bold;
+      border:none; border-radius:10px; cursor:pointer; color:white;
+      transition:transform .2s;
+    }
+    .grade-card:hover { transform:scale(1.05); }
+    .grade-card:nth-child(1)  { background:var(--class-1-color); }
+    .grade-card:nth-child(2)  { background:var(--class-2-color); }
+    .grade-card:nth-child(3)  { background:var(--class-3-color); }
+    .grade-card:nth-child(4)  { background:var(--class-4-color); }
+    .grade-card:nth-child(5)  { background:var(--class-5-color); }
+    .grade-card:nth-child(6)  { background:var(--class-6-color); }
+    .grade-card:nth-child(7)  { background:var(--class-7-color); }
+    .grade-card:nth-child(8)  { background:var(--class-8-color); }
+    .grade-card:nth-child(9)  { background:var(--class-9-color); }
+    .grade-card:nth-child(10) { background:var(--class-10-color); }
+    .grade-card:nth-child(11) { background:var(--class-11-color); }
+
+    .topics-section, .cards-section { display:none; text-align:center; margin:2rem auto; max-width:1000px; }
+    .topics-section h2 {
+      font-size: 1.8rem;
+      margin-bottom: 1.2rem;
+      margin-top: -1rem;
+    }
+    .topics-container { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:1rem; }
+    .topic-btn {
+      padding:1rem; font-size:1rem; font-weight:bold; background:var(--secondary-color);
+      color:white; border:none; border-radius:10px; cursor:pointer; transition:transform .2s;
+    }
+    .topic-btn:hover { transform:scale(1.05); }
+
+    .card {
+      perspective:1000px; margin:2rem auto; width:360px; height:240px;
+    }
+    .card-inner {
+      position:relative; width:100%; height:100%;
+      transform-style:preserve-3d; transition:transform .6s;
+    }
+    .card.flipped .card-inner { transform:rotateY(180deg); }
+    .card-front, .card-back {
+      position:absolute; width:100%; height:100%; backface-visibility:hidden;
+      background:white; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.1);
+      display:flex; align-items:center; justify-content:center; padding:1rem; font-size:1.2rem;
+    }
+    .card-back { transform:rotateY(180deg); background:#dfe6e9; font-style:italic; }
+
+    .card-controls { display:flex; justify-content:center; gap:1.5rem; margin-bottom:2rem; }
+    .nav-btn {
+      padding:.7rem 1.8rem; background:var(--primary-color); color:white;
+      border:none; border-radius:10px; font-weight:bold; cursor:pointer;
+    }
+
+    footer {
+      background:var(--dark-color); color:white; text-align:center;
+      padding:1rem; margin-top:auto;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>MathFlash</h1>
+    <p>Интерактивные карточки для изучения математики с 1 по 11 класс</p>
+  </header>
+
+  <div class="intro" id="home">
+    <h2>Учите математику легко и интересно!</h2>
+    <p>MathFlash — это веб-сайт, который помогает школьникам и студентам любого уровня усвоить математику через интерактивные карточки. Выбирайте ваш класс, тему, переворачивайте карточки и сразу получайте понятные определения, формулы, решения и примеры.</p>
+  </div>
+
+  <div class="plus-container">
+    <div class="plus-card">
+      <h3>🧠 Интерактивные карточки</h3>
+      <p>Карточки с теорией и примерами задач сразу под рукой.</p>
+    </div>
+    <div class="plus-card">
+      <h3>📚 Темы по школьной программе</h3>
+      <p>6 тщательно подобранных тем для каждого класса.</p>
+    </div>
+    <div class="plus-card">
+      <h3>📊 Прогресс обучения</h3>
+      <p>Следите за темами, которые уже освоили, и повторяйте сложные.</p>
+    </div>
+    <div class="plus-card">
+      <h3>🎯 Подготовка к экзаменам</h3>
+      <p>Быстро повторяйте ключевые темы перед контрольными и ЕГЭ.</p>
+    </div>
+    <div class="plus-card">
+      <h3>💻 Доступ без установки</h3>
+      <p>Работает в любом браузере на компьютере и мобильном устройстве.</p>
+    </div>
+  </div>
+
+  <div class="grade-section">
+    <h2>Выберите ваш класс</h2>
+    <div class="grades-container">
+      <button class="grade-card" onclick="showTopics(1)">1 класс</button>
+      <button class="grade-card" onclick="showTopics(2)">2 класс</button>
+      <button class="grade-card" onclick="showTopics(3)">3 класс</button>
+      <button class="grade-card" onclick="showTopics(4)">4 класс</button>
+      <button class="grade-card" onclick="showTopics(5)">5 класс</button>
+      <button class="grade-card" onclick="showTopics(6)">6 класс</button>
+      <button class="grade-card" onclick="showTopics(7)">7 класс</button>
+      <button class="grade-card" onclick="showTopics(8)">8 класс</button>
+      <button class="grade-card" onclick="showTopics(9)">9 класс</button>
+      <button class="grade-card" onclick="showTopics(10)">10 класс</button>
+      <button class="grade-card" onclick="showTopics(11)">11 класс</button>
+    </div>
+  </div>
+
+  <section class="topics-section" id="topics">
+    <h2>Выберите тему</h2>
+    <div class="topics-container" id="topicButtons"></div>
+  </section>
+
+  <section class="cards-section" id="cards">
+    <div class="card" id="card" onclick="flipCard()">
+      <div class="card-inner" id="cardInner">
+        <div class="card-front" id="cardFront">Название карточки</div>
+        <div class="card-back" id="cardBack">Ответ и пример</div>
+      </div>
+    </div>
+    <div class="card-controls">
+      <button class="nav-btn" onclick="prevCard()">← Назад</button>
+      <button class="nav-btn" onclick="nextCard()">Вперёд →</button>
+    </div>
+  </section>
+
+  <footer>
+    © 2025 MathFlash | Интерактивные карточки по математике
+  </footer>
+
+  <script>
+    const topicsData = {
+      1: [
+        { name: "Числа и счёт", cards:[
+          { front:"Назовите цифры", back:"0,1,2,3,4,5,6,7,8,9. Пример: цифра 5 — пятая цифра." },
+          { front:"Счёт предметов", back:"🍎🍎🍎 = 3 яблока" },
+          { front:"Сравнение чисел", back:"7 < 9, потому что при счёте 9 следует за 7." },
+          { front:"Последовательность", back:"1,2,3,4,5,6,7,8,9,10 — натуральный ряд." }
+        ]},
+        { name: "Сложение до 10", cards:[
+          { front:"2+3", back:"=5 (например, 2 яблока + 3 яблока = 5 яблок)" },
+          { front:"5+4", back:"=9 (5 пальцев + 4 пальца = 9 пальцев)" }
+        ]},
+        { name: "Вычитание до 10", cards:[
+          { front:"5−2", back:"=3 (5 шариков − 2 шарика = 3 шарика)" },
+          { front:"7−3", back:"=4 (7 карандашей − 3 карандаша = 4 карандаша)" }
+        ]},
+        { name: "Простые задачи", cards:[
+          { front:"3+2−1", back:"=4 (3+2=5, 5−1=4)" },
+          { front:"5+3−4", back:"=4 (5+3=8, 8−4=4)" }
+        ]},
+        { name: "Перестановка", cards:[
+          { front:"Что такое перестановка?", back:"изменение порядка чисел, переменных, выражений при сложении" },
+          { front:"Правда ли, что 2+3=3+2?", back:"Да, сумма не меняется." }
+        ]},
+        { name: "Ноль в действиях", cards:[
+          { front:"7+0", back:"=7 (с добавлением нуля число не меняется)" },
+          { front:"7−0", back:"=7 (с вычитанием нуля число не меняется)" }
+        ]}
+      ],
+      2: [
+        { name:"Сложение до 20", cards:[
+          { front:"12+7", back:"=19 (10+9=19)" },
+          { front:"13+6", back:"=19 (13+6 составное действие)" }
+        ]},
+        { name:"Вычитание до 20", cards:[
+          { front:"15−8", back:"=7" },
+          { front:"18−9", back:"=9" }
+        ]},
+        { name:"Переход через десяток", cards:[
+          { front:"9+6", back:"=15 (9+1=10, 6-1=5, 10+5=15)" },
+          { front:"7+6", back:"=13 (7+3=10, 6-3=3, 10+3=13)" }
+        ]},
+        { name:"Задачи на счёт", cards:[
+          { front:"16−9", back:"=7 пассажиров" },
+          { front:"14−8", back:"=6 яблок" }
+        ]},
+        { name:"Умножение на 2", cards:[
+          { front:"2×5", back:"=10 (5+5)" },
+          { front:"2×8", back:"=16 (8+8)" }
+        ]},
+        { name:"Деление на 2", cards:[
+          { front:"12÷2", back:"=6" },
+          { front:"20÷2", back:"=10" }
+        ]}
+      ],
+      3: [ 
+        { name:"Сложение и вычитание", cards:[
+          { front:"12+8", back:"=20" },
+          { front:"15−7", back:"=8" }
+        ]},
+        { name:"Таблица умножения", cards:[
+          { front:"6×6", back:"=36" },
+          { front:"7×7", back:"=49" }
+        ]},
+        { name:"Деление с остатком", cards:[
+          { front:"13÷5", back:"=2 остаток 3" },
+          { front:"17÷4", back:"=4 остаток 1" } 
+        ]}, 
+        { name:"Масса и длина", cards:[ 
+          { front:"1 кг = ?", back:"=1000 г" },
+          { front:"1 м = ?", back:"=100 см" } 
+        ]}, 
+        { name:"Единицы времени", cards:[ 
+          { front:"1 час = ?", back:"=60 минут" } 
+        ]}, { name:"Периметр", cards:[ 
+          { front:"Периметр квадрата со стороной 5 см", back:"=20 см" } 
+        ]} 
+      ], 
+      4: [ 
+        { name:"Сложение и вычитание в пределах 1000", cards:[ 
+          { front:"234 + 567", back:"=801" },
+          { front:"358 + 547", back:"=905" } 
+        ]}, 
+        { name:"Умножение и деление", cards:[ 
+          { front:"45×2", back:"=90" },
+          { front:"72÷4", back:"=18" } 
+        ]}, 
+        { name:"Доли и дроби", cards:[ 
+          { front:"1/2 яблока", back:"=половина яблока" },
+          { front:"1/4 яблока", back:"=четверть яблоки" } 
+        ]}, 
+        { name:"Прямоугольник", cards:[
+          { front:"Что такое прямоугольник?", back:"четырёхугольник, у которого все углы прямые" },  
+          { front:"S = ?", back:"S = a × b" } 
+        ]}, 
+        { name:"Геометрические фигуры", cards:[ 
+          { front:"Что такое фигура?", back:"часть плоскости, ограниченная замкнутой ломаной или кривой линией" }, 
+          { front:"Чем отличается квадрат от прямоугольника?", back:"У квадрата все стороны равны, а у прямоугольника нет." } 
+        ]}, 
+        { name:"Единицы измерения", cards:[ 
+          { front:"1 км = ?", back:"=1000 м" },
+          { front:"1 с = ?", back:"=1000 мс" }  
+        ]}
+      ], 
+      5: [
+        { name: "Натуральные числа", cards: [
+          { front: "Что такое натуральные числа?", back: "Это числа для счёта: 1, 2, 3, 4, …" },
+          { front: "Последовательность", back: "Ряд: 1, 2, 3, … возрастающий порядок." },
+          { front: "Числовой отрезок", back: "Отображение чисел на прямой." }
+        ]},
+        { name: "Деление и кратные", cards: [
+          { front: "Признак делимости на 2", back: "Число оканчивается на чётную цифру." },
+          { front: "Признак делимости на 5", back: "Число оканчивается на 0 или 5." },
+          { front: "Кратные числа", back: "12 кратно 3, так как 12 делится на 3." }
+        ]},
+        { name: "Порядок действий", cards: [
+          { front: "Что сначала?", back: "Сначала действия в скобках, потом × или ÷, потом + и −." },
+          { front: "Пример: (1+5)÷3-2", back: "=0, (1+5=6, 6÷3=2, 2-2=0)" }
+        ]},
+        { name: "Деление с остатком", cards: [
+          { front: "13 ÷ 4", back: "Результат: 3 (остаток 1)" },
+          { front: "32 ÷ 6", back: "Результат: 5 (остаток 2)" }
+        ]},
+        { name: "Площади", cards: [
+          { front: "Площадь квадрата со стороной 4", back: "S = 4 × 4 = 16 кв. ед." },
+          { front: "Площадь прямоугольника 3×6", back: "S = 3 × 6 = 18 кв. ед." }
+        ]},
+        { name: "Время", cards: [
+          { front: "60 минут = ?", back: "1 час" },
+          { front: "1 сутки = ?", back: "24 часа" }
+        ]}
+      ],
+      6: [
+        { name: "Обыкновенные дроби", cards: [
+          { front: "1/2 + 1/4", back: "Приводим к общему знаменателю: 2/4 + 1/4 = 3/4" },
+          { front: "3/5 * 2/3", back: "= 6/15 = 2/5" }
+        ]},
+        { name: "Отношения и пропорции", cards: [
+          { front: "Понятие отношения", back: "Во сколько раз одно больше другого" },
+          { front: "Пропорция", back: "Равенство отношений: a/b = c/d" }
+        ]},
+        { name: "Углы и треугольники", cards: [
+          { front: "Сумма углов треугольника", back: "180°" },
+          { front: "Прямоугольный треугольник", back: "Один угол = 90°" }
+        ]},
+        { name: "Окружность", cards: [
+          { front: "Что такое радиус?", back: "Отрезок от центра до края" },
+          { front: "Формула длины окружности", back: "C = 2πr" }
+        ]},
+        { name: "Проценты", cards: [
+          { front: "20% от 50", back: "10" },
+          { front: "Увеличить 100 на 10%", back: "110" }
+        ]},
+        { name: "Координатная прямая", cards: [
+          { front: "Координатные прямые", back: "Ох и Оу" },
+          { front: "x = 0", back: "Начало отсчета" }
+        ]}
+      ],
+      7: [
+        { name: "Дроби", cards: [
+          { front: "Что такое обыкновенная дробь?", back: "Число в виде a/b" },
+          { front: "Сложение дробей", back: "Приводим к общиму знаменателю, и потом сложим числители" }
+        ]},
+        { name: "Проценты", cards: [
+          { front: "Что такое процент?", back: "одна сотая часть; обозначается знаком «%»" },
+          { front: "Как найти % от числа?", back: "x × p / 100" }
+        ]},
+        { name: "Уравнения", cards: [
+          { front: "Что такое уравнения?", back: "математическая задача, заключающаяся в составлении записи в виде равенства с переменной (x)" },
+          { front: "Пример: 2x + 5 = 13", back: "x = 4" }
+        ]},
+        { name: "Целые числа", cards: [
+          { front: "Что такое целые числа?", back: "расширение множества натуральных чисел, получаемое добавлением к нему нуля и отрицательных чисел" },
+          { front: "Пример", back: "....5,4,3,2,1,0,-1,-2,-3,...." }
+        ]},
+        { name: "Степени", cards: [
+          { front: "Что такое степень?", back: "это способ кратко записать умножение числа само на себя несколько раз" },
+          { front: "Пример: 2³", back: "8" }
+        ]},
+        { name: "Окружность", cards: [
+          { front: "Формула длины", back: "2πr" },
+          { front: "Формула площади", back: "πr²" }
+        ]}
+      ],
+      8: [
+        { name: "Квадратные уравнения", cards: [
+          { front: "Что такое квадратное уравнение?", back: "это уравнения вида ax²+bx+c=0, где коэффициенты a,b,c — это некоторые числа, причём a ≠ 0" },
+          { front: "x² - 5x + 6 = 0", back: "x=2 или x=3" }
+        ]},
+        { name: "Функции", cards: [
+          { front: "Что такое функция?", back: "соответствие между двумя множествами, при котором каждому элементу одного множества соответствует элемент другого" },
+          { front: "y = x²", back: "Парабола" }
+        ]},
+        { name: "Неравенства", cards: [
+          { front: "Что такое неравенство?", back: "это когда одна сторона выражения не равна второй" },
+          { front: "x - 3 < 5", back: "x < 8" }
+        ]},
+        { name: "Окружность", cards: [
+          { front: "Формула длины", back: "2πr" },
+          { front: "Формула площади", back: "πr²" }
+        ]},
+        { name: "Трапеция", cards: [
+          { front: "Что такое трапеция?", back: "выпуклый четырёхугольник, у которого две стороны параллельны, а две другие стороны не параллельны" },
+          { front: "Площадь", back: "S = (a + b)/2 × h" }
+        ]},
+        { name: "Теорема Пифагора", cards: [
+          { front: "Что такое теормеа пифагора?", back: "соотношение между сторонами прямоугольного треугольника" },
+          { front: "a² + b² = c²", back: "Для прямоугольного треугольника" }
+        ]}
+      ],
+      9: [
+        { name: "Тригонометрия", cards: [
+          { front: "Что такое тригонометрия?", back: "раздел математики, в котором изучаются тригонометрические функции и их использование в геометрии" },
+          { front: "sin²α + cos²α", back: "1" },
+          { front: "tgα", back: "sinα/cosα" },
+          { front: "ctgα", back: "cosα/sinα" }
+        ]},
+        { name: "Функции и графики", cards: [
+          { front: "y = ax² + bx + c", back: "Парабола" },
+          { front: "y = к/х", back: "Гипербола" }
+        ]},
+        { name: "Системы уравнений", cards: [
+          { front: "Метод подстановки", back: "Подставляем выражение из одного уравнения в другое" },
+          { front: "Метод сложения", back: "Складываем первое выражение в другую" }
+        ]},
+        { name: "Векторы", cards: [
+          { front: "Что такое вектор?", back: "объект, имеющий длину и направление" },
+          { front: "Скалярное произведение", back: "a·b = |a||b|cosφ" }
+        ]},
+        { name: "Параллелограмм", cards: [
+          { front: "Стороны", back: "Противоположные стороны равны и параллельны" },
+          { front: "Углы", back: "Противоположные углы равны и сумма равно 180 градусам" }
+        ]},
+        { name: "Окружность", cards: [
+          { front: "Формула площади", back: "πr²" },
+          { front: "Центральный угол", back: "Угол между двумя радиусами" }
+        ]}
+      ],
+      10: [
+        { name: "Производная", cards: [
+          { front: "Что такое производное?", back: "это функция, определяемая для каждого х как предел отношения" },
+          { front: "d/dx xⁿ", back: "n·xⁿ⁻¹" }
+        ]},
+        { name: "Интеграл", cards: [
+          { front: "Что такое интеграл?", back: "это площадь фигуры под графиком функции до Ох" },
+          { front: "∫xⁿ dx", back: "xⁿ⁺¹ / (n+1) + C" }
+        ]},
+        { name: "Предел", cards: [
+          { front: "Что такое предел?", back: "это число в любой окрестности которого находится сколь угодно много членов последовательности" },
+          { front: "lim x→a f(x)", back: "Число, к которому стремится f(x)" }
+        ]},
+        { name: "Логарифмы", cards: [
+          { front: "Что такое логарифм?", back: "это степень, в которую нужно возвести a для получения b" },
+          { front: "logₐb", back: "x, при котором aˣ = b" }
+        ]},
+        { name: "Параметры", cards: [
+          { front: "Что такое параметр?", back: "свойство или показатель объекта или системы, которое можно измерить" },
+          { front: "a(x−1) = x²", back: "Решить при разных a" }
+        ]},
+        { name: "Парабола", cards: [
+          { front: "Формула", back: "y = ax² + bx + c" },
+          { front: "Вершина", back: "x = −b/2a" }
+        ]}
+      ],
+      11: [
+        { name: "Комплексные числа", cards: [
+          { front: "i²", back: "−1" },
+          { front: "z = a + bi", back: "Комплексная форма" }
+        ]},
+        { name: "Пределы", cards: [
+          { front: "Что такое предел?", back: "это число в любой окрестности которого находится сколь угодно много членов последовательности" },
+          { front: "lim x→0 sinx/x", back: "1" }
+        ]},
+        { name: "Производные", cards: [
+          { front: "Что такое производное?", back: "это функция, определяемая для каждого х как предел отношения" },
+          { front: "(x²)'", back: "2x" }
+        ]},
+        { name: "Интегралы", cards: [
+          { front: "Что такое интеграл?", back: "это площадь фигуры под графиком функции до Ох" },
+          { front: "∫x dx", back: "x²/2 + C" }
+        ]},
+        { name: "Логарифмы", cards: [
+          { front: "Что такое логарифм?", back: "это степень, в которую нужно возвести a для получения b" },
+          { front: "logₐ(xy)", back: "logₐx + logₐy" }
+        ]},
+        { name: "Параметры", cards: [
+          { front: "Что такое параметр?", back: "свойство или показатель объекта или системы, которое можно измерить" },
+          { front: "Параметр a в уравнении", back: "Изменяем a и решаем для x" }
+        ]}
+      ]
+    };
+
+    let currentClass, currentTopic, currentCard = 0;
+
+    function showTopics(c) {
+      currentClass = c;
+      document.getElementById('home').style.display='none';
+      document.querySelector('.plus-container').style.display='none';
+      document.querySelector('.grade-section').style.display='none';
+      document.getElementById('topics').style.display='block';
+      const tdiv = document.getElementById('topicButtons');
+      tdiv.innerHTML = '';
+      topicsData[c].forEach((t,i)=>{
+        const btn=document.createElement('button');
+        btn.className='topic-btn';
+        btn.innerText=t.name;
+        btn.onclick=()=>showCards(i);
+        tdiv.appendChild(btn);
+      });
+    }
+
+    function showCards(i) {
+      currentTopic = topicsData[currentClass][i];
+      currentCard = 0;
+      document.getElementById('topics').style.display='none';
+      document.getElementById('cards').style.display='block';
+      updateCard();
+    }
+
+    function updateCard() {
+      const cardEl = document.getElementById('card');
+      cardEl.classList.remove('flipped');
+      const cd = currentTopic.cards[currentCard];
+      document.getElementById('cardFront').innerText = cd.front;
+      document.getElementById('cardBack').innerText = cd.back;
+    }
+
+    function flipCard(){ document.getElementById('card').classList.toggle('flipped'); }
+    function nextCard(){
+      if(currentCard < currentTopic.cards.length-1){ currentCard++; updateCard(); }
+    }
+    function prevCard(){
+      if(currentCard > 0){ currentCard--; updateCard(); }
+    }
+  </script>
+</body>
+</html>
